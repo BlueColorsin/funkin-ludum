@@ -7,18 +7,16 @@ import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 
-class GameOverState extends FlxTransitionableState
-{
-	override function create()
-	{
+class GameOverState extends FlxTransitionableState {
+	override function create() {
 		var loser:FlxSprite = new FlxSprite(100, 100);
-		var loseTex = FlxAtlasFrames.fromSparrow(AssetPaths.lose__png, AssetPaths.lose__xml);
+		var loseTex = Paths.fromSparrow("lose");
 		loser.frames = loseTex;
 		loser.animation.addByPrefix('lose', 'lose', 24, false);
 		loser.animation.play('lose');
 		add(loser);
 
-		var restart:FlxSprite = new FlxSprite(500, 50).loadGraphic(AssetPaths.restart__png);
+		var restart:FlxSprite = new FlxSprite(500, 50).loadGraphic(Paths.image("restart"));
 		restart.setGraphicSize(Std.int(restart.width * 0.6));
 		restart.updateHitbox();
 		restart.alpha = 0;
@@ -35,10 +33,8 @@ class GameOverState extends FlxTransitionableState
 
 	private var fading:Bool = false;
 
-	override function update(elapsed:Float)
-	{
-		if (FlxG.keys.justPressed.ANY && !fading)
-		{
+	override function update(elapsed:Float) {
+		if (FlxG.keys.justPressed.ANY && !fading) {
 			fading = true;
 			FlxG.sound.music.fadeOut(0.5, 0, function(twn:FlxTween)
 			{

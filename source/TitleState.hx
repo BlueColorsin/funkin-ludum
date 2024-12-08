@@ -45,18 +45,18 @@ class TitleState extends FlxTransitionableState
 
 		persistentUpdate = true;
 
-		var bg:FlxSprite = new FlxSprite().loadGraphic(AssetPaths.stageback__png);
+		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image("stageback"));
 		bg.antialiasing = true;
 		bg.setGraphicSize(Std.int(bg.width * 0.6));
 		bg.updateHitbox();
 		add(bg);
 
-		var logoBl:FlxSprite = new FlxSprite().loadGraphic(AssetPaths.logo__png);
+		var logoBl:FlxSprite = new FlxSprite().loadGraphic(Paths.image("logo"));
 		logoBl.screenCenter();
 		logoBl.color = FlxColor.BLACK;
 		add(logoBl);
 
-		var logo:FlxSprite = new FlxSprite().loadGraphic(AssetPaths.logo__png);
+		var logo:FlxSprite = new FlxSprite().loadGraphic(Paths.image("logo"));
 		logo.screenCenter();
 		logo.antialiasing = true;
 		add(logo);
@@ -64,7 +64,7 @@ class TitleState extends FlxTransitionableState
 		FlxTween.tween(logoBl, {y: logoBl.y + 50}, 0.6, {ease: FlxEase.quadInOut, type: PINGPONG});
 		FlxTween.tween(logo, {y: logoBl.y + 50}, 0.6, {ease: FlxEase.quadInOut, type: PINGPONG, startDelay: 0.1});
 
-		FlxG.sound.playMusic('assets/music/title.mp3', 0, false);
+		FlxG.sound.playMusic('assets/audio/title.ogg', 0, false);
 
 		FlxG.sound.music.fadeIn(4, 0, 0.7);
 	}
@@ -84,7 +84,7 @@ class TitleState extends FlxTransitionableState
 			{
 				FlxG.switchState(new PlayState());
 			});
-			FlxG.sound.play('assets/music/titleShoot.mp3', 0.7);
+			FlxG.sound.play('assets/audio/titleShoot.ogg', 0.7);
 		}
 
 		super.update(elapsed);

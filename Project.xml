@@ -35,8 +35,9 @@
 
 	<!-- _______________________________ Libraries ______________________________ -->
 
-	<haxelib name = "flixel"/>
-	<haxelib name = "flixel-addons"/>
+	<haxelib name="flixel"/>
+	<haxelib name="flixel-addons"/>
+	<haxelib name="moonchart"/>
 
 	<!--In case you want to use the addons package-->
 
@@ -71,7 +72,7 @@
 
 	<!--Disable the Flixel core focus lost screen-->
 	<!--<haxedef name="FLX_NO_FOCUS_LOST_SCREEN" />-->
-
+	<haxelib name="hxcpp-debug-server" />
 	<!--Disable the Flixel core debugger. Automatically gets set whenever you compile in release mode!-->
 	<haxedef name="FLX_NO_DEBUG" unless="debug" />
 

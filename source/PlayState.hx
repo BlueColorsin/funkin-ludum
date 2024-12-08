@@ -3,11 +3,7 @@ package;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
-import flixel.FlxState;
-import flixel.addons.display.FlxGridOverlay;
 import flixel.addons.transition.FlxTransitionableState;
-import flixel.graphics.atlas.FlxAtlas;
-import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.system.FlxSound;
@@ -15,10 +11,7 @@ import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.ui.FlxBar;
-import flixel.util.FlxCollision;
-import flixel.util.FlxColor;
 import flixel.util.FlxSort;
-import flixel.util.FlxStringUtil;
 import flixel.util.FlxTimer;
 import haxe.Json;
 import lime.utils.Assets;
@@ -35,9 +28,9 @@ class PlayState extends FlxTransitionableState {
 	private var totalBeats:Int = 0;
 	private var totalSteps:Int = 0;
 
-	private var dad:Dad;
-	private var gf:Girlfriend;
-	private var boyfriend:Boyfriend;
+	private var dad:Character;
+	private var gf:Character;
+	private var boyfriend:Character;
 
 	private var notes:FlxTypedGroup<Note>;
 	private var unspawnNotes:Array<Note> = [];
@@ -67,12 +60,11 @@ class PlayState extends FlxTransitionableState {
 
 	private var healthHeads:FlxSprite;
 
-	override public function create()
-	{
+	override public function create() {
 		persistentUpdate = true;
 		persistentDraw = true;
 
-		var bg:FlxSprite = new FlxSprite(-600, -200).loadGraphic(AssetPaths.stageback__png);
+		var bg:FlxSprite = new FlxSprite(-600, -200).loadGraphic(Paths.image("stageback"));
 		// bg.setGraphicSize(Std.int(bg.width * 2.5));
 		// bg.updateHitbox();
 		bg.antialiasing = true;
@@ -80,7 +72,7 @@ class PlayState extends FlxTransitionableState {
 		bg.active = false;
 		add(bg);
 
-		var stageFront:FlxSprite = new FlxSprite(-650, 600).loadGraphic(AssetPaths.stagefront__png);
+		var stageFront:FlxSprite = new FlxSprite(-650, 600).loadGraphic(Paths.image("stagefront"));
 		stageFront.setGraphicSize(Std.int(stageFront.width * 1.1));
 		stageFront.updateHitbox();
 		stageFront.antialiasing = true;
@@ -88,22 +80,22 @@ class PlayState extends FlxTransitionableState {
 		stageFront.active = false;
 		add(stageFront);
 
-		var stageCurtains:FlxSprite = new FlxSprite(-500, -300).loadGraphic(AssetPaths.stagecurtains__png);
+		var stageCurtains:FlxSprite = new FlxSprite(-500, -300).loadGraphic(Paths.image("stagecurtains"));
 		stageCurtains.setGraphicSize(Std.int(stageCurtains.width * 0.9));
 		stageCurtains.updateHitbox();
 		stageCurtains.antialiasing = true;
 		stageCurtains.scrollFactor.set(1.3, 1.3);
 		stageCurtains.active = false;
 
-		gf = new Girlfriend(400, 130);
+		gf = new Character("boyfriend", 770, 450);
 		gf.scrollFactor.set(0.95, 0.95);
 		gf.antialiasing = true;
 		add(gf);
 
-		dad = new Dad(100, 100);
+		dad = new Character("boyfriend", 770, 450);
 		add(dad);
 
-		boyfriend = new Boyfriend(770, 450);
+		boyfriend = new Character("boyfriend", 770, 450);
 		add(boyfriend);
 
 		add(stageCurtains);
@@ -128,7 +120,7 @@ class PlayState extends FlxTransitionableState {
 			switch (swagCounter)
 			{
 				case 0:
-					FlxG.sound.play('assets/sounds/intro3.mp3', 0.6);
+					FlxG.sound.play('assets/audio/intro3.ogg', 0.6);
 				case 1:
 					var ready:FlxSprite = new FlxSprite().loadGraphic('assets/images/ready.png');
 					ready.scrollFactor.set();
@@ -141,7 +133,7 @@ class PlayState extends FlxTransitionableState {
 							ready.destroy();
 						}
 					});
-					FlxG.sound.play('assets/sounds/intro2.mp3', 0.6);
+					FlxG.sound.play('assets/audio/intro2.ogg', 0.6);
 				case 2:
 					var set:FlxSprite = new FlxSprite().loadGraphic('assets/images/set.png');
 					set.scrollFactor.set();
@@ -154,7 +146,7 @@ class PlayState extends FlxTransitionableState {
 							set.destroy();
 						}
 					});
-					FlxG.sound.play('assets/sounds/intro1.mp3', 0.6);
+					FlxG.sound.play('assets/audio/intro1.ogg', 0.6);
 				case 3:
 					var go:FlxSprite = new FlxSprite().loadGraphic('assets/images/go.png');
 					go.scrollFactor.set();
@@ -167,7 +159,7 @@ class PlayState extends FlxTransitionableState {
 							go.destroy();
 						}
 					});
-					FlxG.sound.play('assets/sounds/introGo.mp3', 0.6);
+					FlxG.sound.play('assets/audio/introGo.ogg', 0.6);
 				case 4:
 			}
 
@@ -189,7 +181,7 @@ class PlayState extends FlxTransitionableState {
 
 		FlxG.fixedTimestep = false;
 
-		healthBarBG = new FlxSprite(0, FlxG.height * 0.9).loadGraphic(AssetPaths.healthBar__png);
+		healthBarBG = new FlxSprite(0, FlxG.height * 0.9).loadGraphic(Paths.image("healthbar"));
 		healthBarBG.screenCenter(X);
 		healthBarBG.scrollFactor.set();
 		add(healthBarBG);
@@ -202,8 +194,7 @@ class PlayState extends FlxTransitionableState {
 		add(healthBar);
 
 		healthHeads = new FlxSprite();
-		var headTex = FlxAtlasFrames.fromSparrow(AssetPaths.healthHeads__png, AssetPaths.healthHeads__xml);
-		healthHeads.frames = headTex;
+		healthHeads.frames = Paths.fromSparrow("healthHeads");
 		healthHeads.animation.add('healthy', [0]);
 		healthHeads.animation.add('unhealthy', [1]);
 		healthHeads.y = healthBar.y - (healthHeads.height / 2);
@@ -216,7 +207,7 @@ class PlayState extends FlxTransitionableState {
 	function startSong():Void
 	{
 		countingDown = false;
-		FlxG.sound.playMusic("assets/music/" + curLevel + "_Inst.mp3");
+		FlxG.sound.playMusic("assets/audio/" + curLevel + "_Inst.ogg");
 		vocals.play();
 	}
 
@@ -235,7 +226,7 @@ class PlayState extends FlxTransitionableState {
 
 		curSong = songData.song;
 
-		vocals = new FlxSound().loadEmbedded("assets/music/" + curSong + "_Voices.mp3");
+		vocals = new FlxSound().loadEmbedded("assets/audio/" + curSong + "_Voices.ogg");
 		FlxG.sound.list.add(vocals);
 
 		notes = new FlxTypedGroup<Note>();
@@ -330,7 +321,7 @@ class PlayState extends FlxTransitionableState {
 		{
 			FlxG.log.add(i);
 			var babyArrow:FlxSprite = new FlxSprite(0, strumLine.y);
-			var arrTex = FlxAtlasFrames.fromSparrow(AssetPaths.NOTE_assets__png, AssetPaths.NOTE_assets__xml);
+			var arrTex = Paths.fromSparrow("NOTE_assets");
 			babyArrow.frames = arrTex;
 			babyArrow.animation.addByPrefix('green', 'arrowUP');
 			babyArrow.animation.addByPrefix('blue', 'arrowDOWN');
@@ -348,8 +339,7 @@ class PlayState extends FlxTransitionableState {
 
 			babyArrow.ID = i + 1;
 
-			if (player == 1)
-			{
+			if (player == 1) {
 				playerStrums.add(babyArrow);
 			}
 
@@ -596,7 +586,7 @@ class PlayState extends FlxTransitionableState {
 		rating.antialiasing = true;
 		rating.velocity.x -= FlxG.random.int(0, 10);
 
-		var comboSpr:FlxSprite = new FlxSprite().loadGraphic(AssetPaths.combo__png);
+		var comboSpr:FlxSprite = new FlxSprite().loadGraphic(Paths.image("combo"));
 		comboSpr.screenCenter();
 		comboSpr.x = coolText.x;
 		comboSpr.acceleration.y = 600;
@@ -804,7 +794,7 @@ class PlayState extends FlxTransitionableState {
 			}
 			combo = 0;
 
-			FlxG.sound.play('assets/sounds/missnote' + FlxG.random.int(1, 3) + ".mp3", FlxG.random.float(0.05, 0.2));
+			FlxG.sound.play('assets/audio/missnote' + FlxG.random.int(1, 3) + ".ogg", FlxG.random.float(0.05, 0.2));
 
 			boyfriend.stunned = true;
 
@@ -913,21 +903,16 @@ class PlayState extends FlxTransitionableState {
 				healthHeads.setGraphicSize(Std.int(healthHeads.width + 20));
 
 				if (totalBeats % gfSpeed == 0)
-					gf.dance();
+					gf.playAnim('idle');
 
-				if (!boyfriend.animation.curAnim.name.startsWith("sing"))
-					boyfriend.playAnim('idle');
+				boyfriend.playAnim('idle');
 			}
 		}
 	}
 
-	private function everyStep():Void
-	{
-		if (Conductor.songPosition > lastStep + Conductor.stepCrochet - Conductor.safeZoneOffset
-			|| Conductor.songPosition < lastStep + Conductor.safeZoneOffset)
-		{
-			if (Conductor.songPosition > lastStep + Conductor.stepCrochet)
-			{
+	private function everyStep():Void {
+		if (Conductor.songPosition > lastStep + Conductor.stepCrochet - Conductor.safeZoneOffset || Conductor.songPosition < lastStep + Conductor.safeZoneOffset) {
+			if (Conductor.songPosition > lastStep + Conductor.stepCrochet) {
 				totalSteps += 1;
 				lastStep += Conductor.stepCrochet;
 			}

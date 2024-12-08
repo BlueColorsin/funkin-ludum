@@ -1,6 +1,6 @@
-package source;
+package;
 
-using Reflect;
+import flixel.FlxSprite;
 
 class Util {
 	public static function castStructure<T>(defaults:T, ?input:T):T {
@@ -9,37 +9,37 @@ class Util {
 		if (input == null)
 			return defaults;
 		
-		var defaultFields = defaults.fields();
+		var defaultFields = Reflect.fields(defaults);
 
 		for(field in defaultFields) {
-			if (input.hasField(field)) {
-				if (input.field(field) == null)
-					input.setField(field, defaults.field(field));
-			} else
-				input.setField(field, defaults.field(field));
+			if (Reflect.hasField(input, field)) {
+				if (Reflect.field(input, field) == null)
+					Reflect.setField(input, field, Reflect.field(defaults, field));
+			} else {
+				Reflect.setField(input, field, Reflect.field(defaults, field));
+			}
 		}
 		
-		for(field in input.fields()) {
+		for(field in Reflect.fields(input)) {
 			if (!defaultFields.contains(field))
-				input.deleteField(field);
+				Reflect.deleteField(input, field);
 		}
 
 		return input;
 	}
 
-	public static function buildAnimations(object:FlxSprite, animations:Array<AnimationData>) {
+	public static function buildAnimations(object:Character, animations:Array<Character.AnimationData>) {
 		for (animation in animations) {
-			var animation:AnimationData = castStructure(Defaults.ANIMATION_DATA, animation);
+			var animation:Character.AnimationData = castStructure(Character.ANIMATION_DATA, animation);
 
-			if (Reflect.hasField(object, "animOffsets"))
-				object.animOffsets.set(animation.name, animation.offsets);
-		
-			if (animation.indices == null && animation.indices.length == 0) {
-				object.addByPrefix(animation.name, animation.prefix, animation.fps, animation.loop);
+			object.addOffset(animation.name, animation.offset[0], animation.offset[1]);
+
+			if (animation.indices.length == 0) {
+				object.animation.addByPrefix(animation.name, animation.prefix, animation.fps, animation.looped);
 				continue;
 			}
 			
-			object.addByIndices(animation.name, animation.prefix, animation.indices, animation.fps, animation.loop);
+			object.animation.addByIndices(animation.name, animation.prefix, animation.indices, "", animation.fps, animation.looped);	
 		}
 	}
 

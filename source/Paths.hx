@@ -1,31 +1,42 @@
 package;
 
-import openfl.system.System;
+import sys.FileSystem;
+import sys.io.File;
 
-import openfl.display.BitmapData;
+import openfl.system.System;
+import openfl.utils.Assets;
 import openfl.media.Sound;
+import openfl.display.BitmapData;
+
+import flixel.graphics.FlxGraphic;
+import flixel.graphics.frames.FlxAtlasFrames;
 
 class Paths {
-	public inline var GLOBAL_PREFIX:String = "assets/";
+	public static inline var GLOBAL_PREFIX:String = "assets/";
 
-	function get(path:String, ?subfolder = ""):String {
+	public static function get(path:String, ?subfolder:Null<String> = ""):String {
+		trace('$GLOBAL_PREFIX$subfolder$path');
+
 		return '$GLOBAL_PREFIX$subfolder$path';
 	}
 
 	/*CACHE SYSTEM*/
 
 	public static var sounds:Map<String, Sound> = [];
-	public static var images:Map<String, BitmapData> = [];
+	public static var images:Map<String, FlxGraphic> = [];
 
 	public static var trackedAssets:Array<String> = [];
 
 	public static var dumpExclusions:Array<String> = [];
 
-	public static function clearMemory() {
+	public static function clearMemory(?all:Bool = false) {
+		if(all)
+			trackedAssets = [];
+
 		for (key in images.keys()) {
 			if (trackedAssets.contains(key) || dumpExclusions.contains(key)) continue;
 
-			images.get(key).dispose();
+			images.get(key).destroy();
 			images.remove(key);
 		}
 
@@ -36,9 +47,8 @@ class Paths {
 			sounds.remove(key);
 		}
 
-		trackedAssets = [];
-
-		System.gc();
+		if(all)
+			System.gc();
 	}
 
 	/*ASSET GETTERS*/
@@ -46,30 +56,43 @@ class Paths {
 	public static function audio(path, ?subfolder = "audio/"):Sound {
 		var key = get('$path.ogg', subfolder);
 
-		if (sounds.contains(key)) return sounds.get(key);
+		if (sounds.exists(key)) return sounds.get(key);
 
 		if(!FileSystem.exists(key)) return null;
-
-		return sounds.set(key, Sound.fromFile(key));
+		
+		sounds.set(key, Sound.fromFile(key));
+		trackedAssets.push(key);
+		return sounds.get(key);
 	}
 
-	public static function image(path, ?subfolder = "images/"):BitmapData {
-		var key = get(path, subfolder);
-		
-		if (images.contains(key)) {
+	public static function image(path, ?subfolder = "images/"):FlxGraphic {
+		var key:String = get('$path.png', subfolder);
+
+		if (images.exists(key)) {
 			return images.get(key);
 			trackedAssets.push(key);
 		}
 
 		if(!FileSystem.exists(key)) return null;
 
+		return cacheBitmap(key, BitmapData.fromFile(key));
+	}
+
+	public static function cacheBitmap(key:String, bitmap:BitmapData):FlxGraphic {
+		var graphic:FlxGraphic = FlxGraphic.fromBitmapData(bitmap, false, key);
+		graphic.persist = true;
+		graphic.destroyOnNoUse = false;
+
+		images.set(key, graphic);
 		trackedAssets.push(key);
-		return sounds.set(key, Sound.fromFile(key));
+		return graphic;
 	}
 
 	public static function file(path, ?subfolder = "") {
-		if(FileSystem.exists(get(path, subfolder)))
-			File.getContent(get(path, subfolder));
+		final key = get(path, subfolder);
+
+		if(FileSystem.exists(key))
+			return File.getContent(key);
 		
 		return null;
 	}
@@ -90,5 +113,18 @@ class Paths {
 	
 	public static function txt(path, ?subfolder = "data/") {
 		return get('$path.xml', subfolder);
+	}
+
+	/*ANIMATION*/
+
+	public static function fromSparrow(path, ?subfolder = "images/"):FlxAtlasFrames {
+		var xml:String = file('$path.xml', subfolder);
+
+		if (xml == null)
+			throw "NO FUCKING XML YOU STUPID CUNT";
+
+		//trace(xml);
+
+		return FlxAtlasFrames.fromSparrow(image(path, subfolder), xml);
 	}
 }
