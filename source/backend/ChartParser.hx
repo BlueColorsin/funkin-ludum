@@ -1,11 +1,10 @@
-package;
+package backend;
 
 import flixel.util.FlxStringUtil;
 
 using StringTools;
 
-class ChartParser
-{
+class ChartParser {
 	static public function parse(songName:String, section:Int):Array<Dynamic>
 	{
 		var IMG_WIDTH:Int = 8;

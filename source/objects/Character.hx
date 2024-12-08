@@ -1,10 +1,13 @@
-package;
+package objects;
 
+import backend.Paths;
+import backend.Util;
 import flixel.FlxSprite;
 
 typedef CharacterData = {
 	icon:String,
 	texture:String,
+	idleSteps:Array<String>,
 	antialiasing:Bool,
 	cameraOffsets:Array<Float>,
 	animations:Array<AnimationData>,
@@ -22,7 +25,8 @@ typedef AnimationData = {
 class Character extends FlxSprite {
 	public static final CHARACTER_DATA:CharacterData = {
 		icon: "bf",
-		texture: "boyfriend",
+		idleSteps: ["idle"],
+		texture: "characters/boyfriend",
 		cameraOffsets: [0, 0],
 		antialiasing: true,
 		animations:[]
@@ -40,7 +44,7 @@ class Character extends FlxSprite {
 	public static var characters:Map<String, Dynamic> = [
 		"boyfriend" => {
 			cameraOffsets: [0, 0],
-			texture: "BOYFRIEND",
+			texture: "characters/BOYFRIEND",
 			icon: "bf",
 			antialiasing: true,
 			animations: [
@@ -70,12 +74,12 @@ class Character extends FlxSprite {
 	
 		super(x, y);
 		
-		frames = Paths.fromSparrow(data.texture);
+		frames = Paths.getSparrowAtlas(data.texture);
 		Util.buildAnimations(this, data.animations);
 	}
 
 	public function playAnim(animName:String, forced:Bool = false, reversed:Bool = false, frame:Int = 0):Void {
-		if (!animation.exists(animName) || stunned) return;
+		if (!animation.exists(animName)) return;
 
 		var offsets = animOffsets.get(animName);
 		offset.set(offsets[0], offsets[1]);

@@ -1,8 +1,8 @@
-package;
+package objects;
 
+import backend.Paths;
+import backend.Conductor;
 import flixel.FlxSprite;
-import flixel.graphics.frames.FlxAtlasFrames;
-import flixel.util.FlxColor;
 
 class Note extends FlxSprite
 {
@@ -19,8 +19,7 @@ class Note extends FlxSprite
 
 	public static var swagWidth:Float = 160 * 0.7;
 
-	public function new(strumTime:Float, noteData:Int, prevNote:Note)
-	{
+	public function new(strumTime:Float, noteData:Int, prevNote:Note) {
 		super();
 
 		this.prevNote = prevNote;
@@ -30,8 +29,7 @@ class Note extends FlxSprite
 
 		this.noteData = noteData;
 
-		var tex = Paths.fromSparrow("NOTE_assets");
-		frames = tex;
+		frames = Paths.getSparrowAtlas("NOTE_assets");
 		animation.addByPrefix('greenScroll', 'green0');
 		animation.addByPrefix('redScroll', 'red0');
 		animation.addByPrefix('blueScroll', 'blue0');
@@ -51,8 +49,7 @@ class Note extends FlxSprite
 		updateHitbox();
 		antialiasing = true;
 
-		switch (Math.abs(noteData))
-		{
+		switch (Math.abs(noteData)) {
 			case 1:
 				x += swagWidth * 2;
 				animation.play('greenScroll');
@@ -67,10 +64,7 @@ class Note extends FlxSprite
 				animation.play('purpleScroll');
 		}
 
-		trace(prevNote);
-
-		if (noteData < 0 && prevNote != null)
-		{
+		if (noteData < 0 && prevNote != null) {
 			noteScore * 0.2;
 			alpha = 0.6;
 
@@ -117,8 +111,7 @@ class Note extends FlxSprite
 	{
 		super.update(elapsed);
 
-		if (mustPress)
-		{
+		if (mustPress) {
 			if (strumTime > Conductor.songPosition - Conductor.safeZoneOffset
 				&& strumTime < Conductor.songPosition + Conductor.safeZoneOffset)
 			{
@@ -129,9 +122,7 @@ class Note extends FlxSprite
 
 			if (strumTime < Conductor.songPosition - Conductor.safeZoneOffset)
 				tooLate = true;
-		}
-		else
-		{
+		} else {
 			canBeHit = false;
 
 			if (strumTime <= Conductor.songPosition)
@@ -140,8 +131,7 @@ class Note extends FlxSprite
 			}
 		}
 
-		if (tooLate)
-		{
+		if (tooLate) {
 			if (alpha > 0.3)
 				alpha = 0.3;
 		}

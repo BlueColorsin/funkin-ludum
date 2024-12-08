@@ -1,5 +1,6 @@
-package;
+package states;
 
+import backend.Paths;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.addons.transition.FlxTransitionableState;
@@ -10,7 +11,7 @@ import flixel.tweens.FlxTween;
 class GameOverState extends FlxTransitionableState {
 	override function create() {
 		var loser:FlxSprite = new FlxSprite(100, 100);
-		var loseTex = Paths.fromSparrow("lose");
+		var loseTex = Paths.getSparrowAtlas("lose");
 		loser.frames = loseTex;
 		loser.animation.addByPrefix('lose', 'lose', 24, false);
 		loser.animation.play('lose');

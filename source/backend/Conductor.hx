@@ -1,4 +1,4 @@
-package;
+package backend;
 
 class Conductor {
 	public static var bpm:Int = 100;

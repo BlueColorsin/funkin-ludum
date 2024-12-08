@@ -1,5 +1,6 @@
-package;
+package states;
 
+import backend.Paths;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
@@ -19,12 +20,10 @@ class TitleState extends FlxTransitionableState
 {
 	static var initialized:Bool = false;
 
-	override public function create():Void
-	{
+	override public function create():Void {
 		super.create();
 
-		if (!initialized)
-		{
+		if (!initialized) {
 			var diamond:FlxGraphic = FlxGraphic.fromClass(GraphicTransTileDiamond);
 			diamond.persist = true;
 			diamond.destroyOnNoUse = false;
@@ -82,7 +81,7 @@ class TitleState extends FlxTransitionableState
 
 			new FlxTimer().start(2, function(tmr:FlxTimer)
 			{
-				FlxG.switchState(new PlayState());
+				FlxG.switchState(new states.PlayState());
 			});
 			FlxG.sound.play('assets/audio/titleShoot.ogg', 0.7);
 		}

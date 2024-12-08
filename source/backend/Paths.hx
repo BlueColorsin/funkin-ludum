@@ -1,4 +1,4 @@
-package;
+package backend;
 
 import sys.FileSystem;
 import sys.io.File;
@@ -15,8 +15,6 @@ class Paths {
 	public static inline var GLOBAL_PREFIX:String = "assets/";
 
 	public static function get(path:String, ?subfolder:Null<String> = ""):String {
-		trace('$GLOBAL_PREFIX$subfolder$path');
-
 		return '$GLOBAL_PREFIX$subfolder$path';
 	}
 
@@ -117,7 +115,7 @@ class Paths {
 
 	/*ANIMATION*/
 
-	public static function fromSparrow(path, ?subfolder = "images/"):FlxAtlasFrames {
+	public static function getSparrowAtlas(path, ?subfolder = "images/"):FlxAtlasFrames {
 		var xml:String = file('$path.xml', subfolder);
 
 		if (xml == null)

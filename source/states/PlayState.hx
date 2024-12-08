@@ -1,12 +1,17 @@
-package;
+package states;
 
+import backend.ChartParser;
+import objects.Note;
+import backend.Paths;
+import backend.Conductor;
+import objects.Character;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.addons.transition.FlxTransitionableState;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
-import flixel.system.FlxSound;
+import flixel.sound.FlxSound;
 import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
@@ -65,8 +70,6 @@ class PlayState extends FlxTransitionableState {
 		persistentDraw = true;
 
 		var bg:FlxSprite = new FlxSprite(-600, -200).loadGraphic(Paths.image("stageback"));
-		// bg.setGraphicSize(Std.int(bg.width * 2.5));
-		// bg.updateHitbox();
 		bg.antialiasing = true;
 		bg.scrollFactor.set(0.9, 0.9);
 		bg.active = false;
@@ -194,7 +197,7 @@ class PlayState extends FlxTransitionableState {
 		add(healthBar);
 
 		healthHeads = new FlxSprite();
-		healthHeads.frames = Paths.fromSparrow("healthHeads");
+		healthHeads.frames = Paths.getSparrowAtlas("healthHeads");
 		healthHeads.animation.add('healthy', [0]);
 		healthHeads.animation.add('unhealthy', [1]);
 		healthHeads.y = healthBar.y - (healthHeads.height / 2);
@@ -241,8 +244,7 @@ class PlayState extends FlxTransitionableState {
 
 		var playerCounter:Int = 0;
 
-		while (playerCounter < 2)
-		{
+		while (playerCounter < 2) {
 			var daBeats:Int = 0; // Not exactly representative of 'daBeats' lol, just how much it has looped
 			var totalLength:Int = 0; // Total length of the song, in beats;
 			for (section in noteData)
@@ -321,7 +323,7 @@ class PlayState extends FlxTransitionableState {
 		{
 			FlxG.log.add(i);
 			var babyArrow:FlxSprite = new FlxSprite(0, strumLine.y);
-			var arrTex = Paths.fromSparrow("NOTE_assets");
+			var arrTex = Paths.getSparrowAtlas("NOTE_assets");
 			babyArrow.frames = arrTex;
 			babyArrow.animation.addByPrefix('green', 'arrowUP');
 			babyArrow.animation.addByPrefix('blue', 'arrowDOWN');
@@ -888,10 +890,8 @@ class PlayState extends FlxTransitionableState {
 
 	private function everyBeat():Void {
 		if (Conductor.songPosition > lastBeat + Conductor.crochet - Conductor.safeZoneOffset
-			|| Conductor.songPosition < lastBeat + Conductor.safeZoneOffset)
-		{
-			if (Conductor.songPosition > lastBeat + Conductor.crochet)
-			{
+			|| Conductor.songPosition < lastBeat + Conductor.safeZoneOffset) {
+			if (Conductor.songPosition > lastBeat + Conductor.crochet) {
 				lastBeat += Conductor.crochet;
 
 				if (camZooming && FlxG.camera.zoom < 1.35 && totalBeats % 4 == 0)

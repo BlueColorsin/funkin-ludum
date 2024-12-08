@@ -1,6 +1,6 @@
-package;
+package backend;
 
-import flixel.FlxSprite;
+import objects.Character;
 
 class Util {
 	public static function castStructure<T>(defaults:T, ?input:T):T {
@@ -28,9 +28,9 @@ class Util {
 		return input;
 	}
 
-	public static function buildAnimations(object:Character, animations:Array<Character.AnimationData>) {
+	public static function buildAnimations(object:Character, animations:Array<AnimationData>) {
 		for (animation in animations) {
-			var animation:Character.AnimationData = castStructure(Character.ANIMATION_DATA, animation);
+			var animation:AnimationData = castStructure(Character.ANIMATION_DATA, animation);
 
 			object.addOffset(animation.name, animation.offset[0], animation.offset[1]);
 
