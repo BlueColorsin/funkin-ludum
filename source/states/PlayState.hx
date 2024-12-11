@@ -1,5 +1,6 @@
 package states;
 
+import backend.EventHandler;
 import backend.ChartParser;
 import objects.Note;
 import backend.Paths;
@@ -24,7 +25,7 @@ import lime.utils.Assets;
 using StringTools;
 
 class PlayState extends FlxTransitionableState {
-	public static var curLevel:String = 'Bopeebo';
+	public static var curLevel:String = 'Unbeatable';
 
 	private var lastBeat:Float = 0;
 	private var lastStep:Float = 0;
@@ -65,9 +66,29 @@ class PlayState extends FlxTransitionableState {
 
 	private var healthHeads:FlxSprite;
 
+	var eventHandler:EventHandler;
+
 	override public function create() {
 		persistentUpdate = true;
 		persistentDraw = true;
+
+		eventHandler = new EventHandler();
+
+		eventHandler.pushStep(8, () -> {
+			trace("I");
+		});
+
+		eventHandler.pushStep(16, () -> {
+			trace("AM");
+		});
+
+		eventHandler.pushStep(24, () -> {
+			trace("SIGMA");
+		});
+
+		eventHandler.active = true;
+
+		add(eventHandler);
 
 		var bg:FlxSprite = new FlxSprite(-600, -200).loadGraphic(Paths.image("stageback"));
 		bg.antialiasing = true;
@@ -95,10 +116,10 @@ class PlayState extends FlxTransitionableState {
 		gf.antialiasing = true;
 		add(gf);
 
-		dad = new Character("boyfriend", 770, 450);
+		dad = new Character("dad", 150, 100);
 		add(dad);
 
-		boyfriend = new Character("boyfriend", 770, 450);
+		boyfriend = new Character("boyfriend", 470, 350);
 		add(boyfriend);
 
 		add(stageCurtains);
@@ -118,8 +139,7 @@ class PlayState extends FlxTransitionableState {
 		Conductor.songPosition = 0;
 		Conductor.songPosition -= Conductor.crochet * 5;
 
-		new FlxTimer().start(Conductor.crochet / 1000, function(tmr:FlxTimer)
-		{
+		new FlxTimer().start(Conductor.crochet / 1000, function(tmr:FlxTimer) {
 			switch (swagCounter)
 			{
 				case 0:
@@ -216,15 +236,13 @@ class PlayState extends FlxTransitionableState {
 
 	var debugNum:Int = 0;
 
-	private function generateSong(dataPath:String):Void
-	{
-		// FlxG.log.add(ChartParser.parse());
+	private function generateSong(dataPath:String):Void {
 		generatedMusic = true;
 
 		generateStaticArrows(0);
 		generateStaticArrows(1);
 
-		var songData = Json.parse(Assets.getText('assets/data/' + dataPath + '/' + dataPath + '.json'));
+		var songData = Json.parse(Paths.file(dataPath + '/' + dataPath + '.json', "data/"));
 		Conductor.changeBPM(songData.bpm);
 
 		curSong = songData.song;
@@ -235,79 +253,35 @@ class PlayState extends FlxTransitionableState {
 		notes = new FlxTypedGroup<Note>();
 		add(notes);
 
-		var noteData:Array<Dynamic> = [];
+		var stepIndex:Float = 16;
+		
+		// for (sectionIndex in 1...songData.sections + 1) {
+		// 	var section:Section = ChartParser.parseSection(dataPath, sectionIndex);
 
-		for (i in 1...songData.sections + 1)
-		{
-			noteData.push(ChartParser.parse(songData.song.toLowerCase(), i));
-		}
+		// 	stepIndex = 16;
 
-		var playerCounter:Int = 0;
+		// 	while(section.notes.length != 0) {
+		// 		var strumTime:Float = (stepIndex * Conductor.stepCrochet) + (sectionIndex * 4 * Conductor.crochet);
 
-		while (playerCounter < 2) {
-			var daBeats:Int = 0; // Not exactly representative of 'daBeats' lol, just how much it has looped
-			var totalLength:Int = 0; // Total length of the song, in beats;
-			for (section in noteData)
-			{
-				var dumbassSection:Array<Dynamic> = section;
+		// 		var noteArray:Array<Int> = section.notes[0];
+		// 		for(column in noteArray) {
+					
+		// 			var prevNote:Null<Note> = null;
+		// 			if (unspawnNotes.length > 0)
+		// 				prevNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
 
-				var daStep:Int = 0;
-				var coolSection:Int = Std.int(section.length / 4);
+		// 			var note:Note = new Note(strumTime, column, column < 4);
 
-				if (coolSection <= 4) // FIX SINCE MOST THE SHIT I MADE WERE ONLY 3 HTINGS LONG LOl
-					coolSection = 4;
-				else if (coolSection <= 8)
-					coolSection = 8;
+		// 			unspawnNotes.push(note);
+		// 		}
 
-				for (songNotes in dumbassSection)
-				{
-					sectionScores[0].push(0);
-					sectionScores[1].push(0);
+		// 		stepIndex -= section.scale;
 
-					if (songNotes != 0)
-					{
-						var daStrumTime:Float = ((daStep * Conductor.stepCrochet) + (Conductor.crochet * 8 * totalLength))
-							+ ((Conductor.crochet * coolSection) * playerCounter);
-
-						var oldNote:Note;
-						if (unspawnNotes.length > 0)
-							oldNote = unspawnNotes[Std.int(unspawnNotes.length - 1)];
-						else
-							oldNote = null;
-
-						var swagNote:Note = new Note(daStrumTime, songNotes, oldNote);
-						swagNote.scrollFactor.set(0, 0);
-
-						unspawnNotes.push(swagNote);
-
-						swagNote.x += ((FlxG.width / 2) * playerCounter); // general offset
-
-						if (playerCounter == 1) // is the player
-						{
-							swagNote.mustPress = true;
-						}
-						else
-						{
-							sectionScores[0][daBeats] += swagNote.noteScore;
-						}
-					}
-
-					daStep += 1;
-				}
-
-				// only need to do it once
-				if (playerCounter == 0)
-					sectionLengths.push(Math.round(coolSection / 4));
-				totalLength += Math.round(coolSection / 4);
-				daBeats += 1;
-			}
-
-			trace(unspawnNotes.length);
-			playerCounter += 1;
-		}
+		// 		section.notes.shift();
+		// 	}
+		// }
 
 		unspawnNotes.sort(sortByShit);
-		trace('FIRST NOTE ' + unspawnNotes[0]);
 	}
 
 	function sortByShit(Obj1:Note, Obj2:Note):Int
@@ -319,12 +293,10 @@ class PlayState extends FlxTransitionableState {
 
 	private function generateStaticArrows(player:Int):Void
 	{
-		for (i in 0...4)
-		{
+		for (i in 0...4) {
 			FlxG.log.add(i);
 			var babyArrow:FlxSprite = new FlxSprite(0, strumLine.y);
-			var arrTex = Paths.getSparrowAtlas("NOTE_assets");
-			babyArrow.frames = arrTex;
+			babyArrow.frames = Paths.getSparrowAtlas("NOTE_assets");
 			babyArrow.animation.addByPrefix('green', 'arrowUP');
 			babyArrow.animation.addByPrefix('blue', 'arrowDOWN');
 			babyArrow.animation.addByPrefix('purple', 'arrowLEFT');
@@ -379,8 +351,7 @@ class PlayState extends FlxTransitionableState {
 
 	var sectionScored:Bool = false;
 
-	override public function update(elapsed:Float)
-	{
+	override public function update(elapsed:Float) {
 		super.update(elapsed);
 
 		healthHeads.setGraphicSize(Std.int(FlxMath.lerp(100, healthHeads.width, 0.98)));
@@ -390,23 +361,17 @@ class PlayState extends FlxTransitionableState {
 			healthHeads.animation.play('unhealthy');
 		else
 			healthHeads.animation.play('healthy');
-		/* 
-			if (FlxG.keys.justPressed.NINE)
-				FlxG.switchState(new Charting());
-			if (FlxG.keys.justPressed.EIGHT)
-				FlxG.switchState(new Charting(true));
-		 */
 
-		if (countingDown)
-		{
+		if (countingDown) {
 			Conductor.songPosition += FlxG.elapsed * 1000;
 
 			if (Conductor.songPosition >= 0)
 				startSong();
-		}
-		else
+		} else {	
 			Conductor.songPosition = FlxG.sound.music.time;
-		var playerTurn:Int = totalBeats % (sectionLengths[curSection] * 8);
+		}
+
+		var playerTurn:Int = 0;
 
 		if (playerTurn == (sectionLengths[curSection] * 8) - 1 && !sectionScored)
 		{
@@ -438,10 +403,8 @@ class PlayState extends FlxTransitionableState {
 
 		FlxG.watch.addQuick("beatShit", totalBeats);
 
-		if (curSong == 'Fresh')
-		{
-			switch (totalBeats)
-			{
+		if (curSong == 'Fresh') {
+			switch (totalBeats) {
 				case 16:
 					camZooming = true;
 					gfSpeed = 2;
@@ -458,28 +421,25 @@ class PlayState extends FlxTransitionableState {
 			}
 		}
 
-		if (curSong == 'Bopeebo')
-		{
-			switch (totalBeats)
-			{
+		if (curSong == 'Bopeebo') {
+			switch (totalBeats) {
 				case 127:
 					FlxG.sound.music.stop();
 					curLevel = 'Fresh';
 					FlxG.switchState(new PlayState());
 			}
 		}
+
 		everyBeat();
 		everyStep();
 		// better streaming of shit
 
-		if (health <= 0)
-		{
+		if (health <= 0) {
 			boyfriend.stunned = true;
 			FlxG.switchState(new GameOverState());
 		}
 
-		if (unspawnNotes[0] != null)
-		{
+		if (unspawnNotes[0] != null) {
 			FlxG.watch.addQuick('spsa', unspawnNotes[0].strumTime);
 			FlxG.watch.addQuick('weed', Conductor.songPosition);
 
@@ -508,10 +468,8 @@ class PlayState extends FlxTransitionableState {
 					daNote.active = true;
 				}
 
-				if (!daNote.mustPress && daNote.wasGoodHit)
-				{
-					switch (Math.abs(daNote.noteData))
-					{
+				if (!daNote.mustPress && daNote.wasGoodHit) {
+					switch (Math.abs(daNote.noteData)) {
 						case 1:
 							dad.playAnim('singUP');
 						case 2:
@@ -632,8 +590,7 @@ class PlayState extends FlxTransitionableState {
 			daLoop++;
 		}
 
-		trace(combo);
-		trace(seperatedScore);
+		trace("combo: " + combo + ", sigmaScore: " + seperatedScore);
 
 		coolText.text = Std.string(seperatedScore);
 		// add(coolText);
@@ -684,7 +641,6 @@ class PlayState extends FlxTransitionableState {
 				if (daNote.canBeHit && daNote.mustPress && !daNote.tooLate)
 				{
 					possibleNotes.push(daNote);
-					trace('NOTE-' + daNote.strumTime + ' ADDED');
 				}
 			});
 
@@ -840,15 +796,13 @@ class PlayState extends FlxTransitionableState {
 
 	function noteCheck(keyP:Bool, note:Note):Void
 	{
-		trace(note.noteData + ' note check here ' + keyP);
 		if (keyP)
 			goodNoteHit(note);
 		else
 			badNoteCheck();
 	}
 
-	function goodNoteHit(note:Note):Void
-	{
+	function goodNoteHit(note:Note):Void {
 		if (!note.wasGoodHit)
 		{
 			combo += 1;
@@ -878,7 +832,7 @@ class PlayState extends FlxTransitionableState {
 				}
 			});
 
-			sectionScores[1][curSection] += note.noteScore;
+			//sectionScores[1][curSection] += note.noteScore;
 			note.wasGoodHit = true;
 			vocals.volume = 1;
 
@@ -899,13 +853,10 @@ class PlayState extends FlxTransitionableState {
 
 				totalBeats += 1;
 
-				dad.playAnim('idle');
 				healthHeads.setGraphicSize(Std.int(healthHeads.width + 20));
 
-				if (totalBeats % gfSpeed == 0)
-					gf.playAnim('idle');
-
-				boyfriend.playAnim('idle');
+				dad.dance(Math.floor(lastBeat));
+				boyfriend.dance(Math.floor(lastBeat));
 			}
 		}
 	}

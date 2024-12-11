@@ -37,7 +37,7 @@
 
 	<haxelib name="flixel"/>
 	<haxelib name="flixel-addons"/>
-	<haxelib name="moonchart"/>
+	<haxelib name="moonchart"/>	
 
 	<!--In case you want to use the addons package-->
 

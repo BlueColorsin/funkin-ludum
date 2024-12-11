@@ -119,9 +119,7 @@ class Paths {
 		var xml:String = file('$path.xml', subfolder);
 
 		if (xml == null)
-			throw "NO FUCKING XML YOU STUPID CUNT";
-
-		//trace(xml);
+			throw 'NO XML FOUND AT PATH\n"${Paths.xml(path, subfolder)}"';
 
 		return FlxAtlasFrames.fromSparrow(image(path, subfolder), xml);
 	}

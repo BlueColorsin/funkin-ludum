@@ -1,11 +1,10 @@
 package objects;
 
 import backend.Paths;
-import backend.Conductor;
+import backend.NoteTypeHandler;
 import flixel.FlxSprite;
 
-class Note extends FlxSprite
-{
+class Note extends FlxSprite {
 	public var strumTime:Float = 0;
 
 	public var mustPress:Bool = false;
@@ -23,13 +22,15 @@ class Note extends FlxSprite
 		super();
 
 		this.prevNote = prevNote;
-
+		
 		x += 50;
 		this.strumTime = strumTime;
-
+		
 		this.noteData = noteData;
+		scrollFactor.set(0, 0);
 
 		frames = Paths.getSparrowAtlas("NOTE_assets");
+
 		animation.addByPrefix('greenScroll', 'green0');
 		animation.addByPrefix('redScroll', 'red0');
 		animation.addByPrefix('blueScroll', 'blue0');
@@ -47,6 +48,7 @@ class Note extends FlxSprite
 
 		setGraphicSize(Std.int(width * 0.7));
 		updateHitbox();
+
 		antialiasing = true;
 
 		switch (Math.abs(noteData)) {
@@ -107,33 +109,7 @@ class Note extends FlxSprite
 		}
 	}
 
-	override function update(elapsed:Float)
-	{
+	override public function update(elapsed:Float) {
 		super.update(elapsed);
-
-		if (mustPress) {
-			if (strumTime > Conductor.songPosition - Conductor.safeZoneOffset
-				&& strumTime < Conductor.songPosition + Conductor.safeZoneOffset)
-			{
-				canBeHit = true;
-			}
-			else
-				canBeHit = false;
-
-			if (strumTime < Conductor.songPosition - Conductor.safeZoneOffset)
-				tooLate = true;
-		} else {
-			canBeHit = false;
-
-			if (strumTime <= Conductor.songPosition)
-			{
-				wasGoodHit = true;
-			}
-		}
-
-		if (tooLate) {
-			if (alpha > 0.3)
-				alpha = 0.3;
-		}
 	}
 }
