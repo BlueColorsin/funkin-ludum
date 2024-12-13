@@ -1,5 +1,6 @@
 package backend;
 
+import haxe.Json;
 import sys.FileSystem;
 import sys.io.File;
 
@@ -92,6 +93,15 @@ class Paths {
 		if(FileSystem.exists(key))
 			return File.getContent(key);
 		
+		return null;
+	}
+
+	public static function getJson(path, ?subfolder = "data/") {
+		var key = json(path, subfolder);
+
+		if(FileSystem.exists(key))
+			return Json.parse(File.getContent(key));
+
 		return null;
 	}
 
