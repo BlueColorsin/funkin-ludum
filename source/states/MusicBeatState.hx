@@ -50,8 +50,7 @@ class MusicBeatState extends FlxUIState
 		curBeat = Math.floor(curStep / 4);
 	}
 
-	private function updateCurStep():Void
-	{
+	private function updateCurStep():Void {
 		var lastChange:BPMChangeEvent = {
 			stepTime: 0,
 			songTime: 0,
@@ -72,8 +71,7 @@ class MusicBeatState extends FlxUIState
 			beatHit();
 	}
 
-	public function beatHit():Void
-	{
+	public function beatHit():Void {
 		//do literally nothing dumbass
 	}
 }
