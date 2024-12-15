@@ -2,6 +2,7 @@ package backend;
 
 typedef BPMchange = {
 	timeStamp:Float,
+	stepTime:Int,
 
 	bpm:Float,
 	timeSignature:Array<Int> // Numerator, Denominator
@@ -13,7 +14,7 @@ class Conductor {
 	
 	public static var bpm:Float = 60;
 	
-	public static var timeSignature:Array<Int> = [4 / 4];
+	public static var timeSignature:Array<Int> = [4, 4];
 
 	public static var crochet:Float = ((60 / bpm) * 1000); // beats in milliseconds
 	public static var stepCrochet:Float = crochet / timeSignature[0]; // steps in milliseconds
@@ -24,12 +25,13 @@ class Conductor {
 
 	public static var BPM_CHANGE:BPMchange = {
 		timeStamp: 0.0,
+		stepTime: 0,
 
 		bpm: 60,
 		timeSignature: [4, 4]
 	};
 
-	public static var bpmChanges:Array<BPMchange>;
+	public static var bpmChanges:Array<BPMchange> = [];
 
 	public static var currentBPMchange:BPMchange = BPM_CHANGE;
 
@@ -45,20 +47,24 @@ class Conductor {
 	}
 
 	public static function sortBPMchanges(?position:Float = null) {
-		position ?? songPosition;
+		position ??= songPosition;
+
+		if(bpmChanges.length == 0) return;
 
 		bpmChanges.sort((struct1, struct2) -> {
 			if (struct1.timeStamp < position) return 1;
 			return Std.int(struct1.timeStamp - struct2.timeStamp);
 		});
 
-		if(currentBPM != bpmChanges[0]) changeBPM(position);
+		if(currentBPMchange != bpmChanges[0]) updateBPM();
 	}
 
 	// gets the current step based off of argument one accounting for bpm changes
 	public static function getCurrentStep(?position:Float = null):Int {
-		position ?? songPosition;
+		position ??= songPosition;
 
-		return Math.floor(position / ((60 / bpm) * 250));
+		var time:Float = (Conductor.songPosition - currentBPMchange.timeStamp) / Conductor.stepCrochet;
+
+		return Math.floor(currentBPMchange.stepTime + (time));
 	}
 }

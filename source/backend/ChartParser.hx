@@ -1,12 +1,9 @@
 package backend;
 
-import haxe.PosInfos;
-import haxe.Json;
-import openfl.display.Bitmap;
-import flixel.util.FlxColor;
 import backend.NoteTypeHandler;
-import flash.display.BitmapData;
 import backend.Conductor;
+import flixel.util.FlxColor;
+import flash.display.BitmapData;
 
 using StringTools;
 
@@ -16,6 +13,7 @@ typedef Song = {
 	song:String,
 	sections:Int,
 	bpm:Float,
+	timeSignature:Array<Int>,
 	bpmChanges:Array<BPMchange>,
 	events:Array<Event>,
 	notes:Array<Dynamic>
@@ -54,10 +52,13 @@ class ChartParser {
 
 		Conductor.updateBPM({
 			timeStamp: 0.0,
+			stepTime: 0,
 			
 			bpm: data.bpm,
-			timeSignature: data.timeSignature()
+			timeSignature: data.timeSignature
 		});
+
+		Conductor.sortBPMchanges(0.0);
 
 		for(bpmChange in data.bpmChanges) {
 			Conductor.bpmChanges.push(Util.castStructure(Conductor.BPM_CHANGE, bpmChange));
@@ -67,9 +68,9 @@ class ChartParser {
 			for(y in 0...bitmaps[index].height) {
 				var scale:Float = getScale(index);
 
-				var position:Float = (getStepCrochet() * scale * y) + (getMeasureLengthMs() * (index -  1));
+				var position:Float = (getStepLengthMs() * scale * y) + (getMeasureLengthMs() * (index -  1));
 
-				sortBPMchanges(position);
+				Conductor.sortBPMchanges(position);
 
 				for(x in 0...bitmaps[index].width) {
 					var color = getPixel(index, x, y);
@@ -89,16 +90,12 @@ class ChartParser {
 			}
 		}
 
-		while(bitmaps.length != 0) {
-			bitmaps.shift().dispose();
-		}
-
 		return data;
 	}
 
-	public static function loadBitmaps(sections:Int) { // null checking maybe
+	public static function loadBitmaps(sections:Int, ?difficulty:String = "hard") { // null checking maybe
 		for(index in 1...sections) {
-			bitmaps[index] ??= BitmapData.fromFile(Paths.get('${data.song}/${data.song}_section_$index', 'songs/') + ".png");
+			bitmaps[index] ??= BitmapData.fromFile(Paths.get('${data.song}/$difficulty/${data.song}_section_$index', 'songs/') + ".png");
 		}
 	}
 
@@ -113,7 +110,7 @@ class ChartParser {
 			y++;
 			length += scale * getStepLengthMs();
 			
-			sortBPMchanges(getStepLengthMs() * scale * y) + (getMeasureLengthMs() * (index -  1));
+			Conductor.sortBPMchanges((getStepLengthMs() * scale * y) + (getMeasureLengthMs() * (index -  1)));
 
 			if(y + 1 > bitmaps[index].height) {
 				index++;
@@ -133,10 +130,6 @@ class ChartParser {
 		bitmaps[index].setPixel(x, y, color);
 	}
 
-	public static inline function getPosition(index:Int, y:Int) {
-		return (getStepCrochet() * scale * y) + (getMeasureLengthMs() * (index -  1));
-	}
-
 	public static function getScale(index) {
 		return Conductor.timeSignature[0] * Conductor.timeSignature[1] / bitmaps[index].height;
 	}
@@ -152,50 +145,4 @@ class ChartParser {
 	public static function getMeasureLengthMs():Float {
 		return (60 / Conductor.bpm) * 4000;
 	}
-
-	// public static function parseSection(path:String):ChartSection {
-	// 	bitmap = BitmapData.fromFile(path);
-		
-	// 	var section:ChartSection = {
-	// 		notes: [],
-	// 		scale: 16 / bitmap.height // add time signature
-	// 	};
-
-	// 	for (y in 0...bitmap.height) {
-	// 		section.notes.push([]);
-
-	// 		for (x in 0...bitmap.width) {
-	// 			var color:String = getPixelColor(x, y);
-				
-	// 			if (color == IGNORE_COLOR)
-	// 				continue;
-		
-				// var note:NoteData = {
-				// 	type: NoteTypeHandler.get(color),
-				// 	sustainLength: getSustainLength(x, y, color),
-				// 	data: x
-				// }
-
-				// section.notes[y].push(note);
-	// 		}
-	// 	}
-
-	// 	bitmap.dispose(); bitmap = null;
-
-	// 	return section;
-	// }
-
-	// private static function getSustainLength(x:Int, y:Int, color:String):Int {
-	// 	var length:Int = 0;
-
-	// 	for (thing in y + 1...bitmap.height) {
-	// 		if(getPixelColor(x, thing) != color) break;
-
-	// 		bitmap.setPixel(x, thing, FlxColor.fromString('#$IGNORE_COLOR'));
-
-	// 		length = thing;
-	// 	}
-
-	// 	return length;
-	// }
 }

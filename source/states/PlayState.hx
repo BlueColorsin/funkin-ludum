@@ -32,17 +32,20 @@ import objects.Note;
 using StringTools;
 
 class PlayState extends FlxTransitionableState {
-	public static var curSong:String = 'Spookeez';
+	public static var curSong:String = 'spookeez';
 
 	var song:Song;
 
-	var curBeat:Int = 0;
-	var curStep:Int = 0;
+	var curBeat = 0.0;
+	var curStep = 0.0;
 	var curSection:Int = 0;
 
 	var bf:Character;
 	var dad:Character;
 	var gf:Character;
+
+	var inst:FlxSound;
+	var tracks:Array<FlxSound> = [];
 
 	var strumLines:Array<Strumline> = [];
 
@@ -53,10 +56,14 @@ class PlayState extends FlxTransitionableState {
 
 	var eventHandler:EventHandler;
 
+	var sigma:Float = 0;
+
 	override public function create() {
 		add(eventHandler = new EventHandler());
 
-		//song = ChartParser.parse(curSong);
+		song = ChartParser.parse(curSong);
+		
+		trace(song);
 
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, (event:KeyboardEvent) -> {
 			var key:Int = validateKey(event.keyCode);
@@ -73,8 +80,25 @@ class PlayState extends FlxTransitionableState {
 
 			trace("KEY UP  : " + key);
 		});
+		
+		inst = new FlxSound().loadEmbedded(Paths.audio("inst", 'songs/$curSong/audio/'));
+
+		tracks.push(new FlxSound().loadEmbedded(Paths.audio("voices", 'songs/$curSong/audio/')));
 
 		super.create();
+
+		FlxG.sound.list.add(tracks[0]);
+
+		#if debug
+			FlxG.watch.add(Conductor, "songPosition", "songPosition");
+			FlxG.watch.add(Conductor, "bpm", "bpm");
+			FlxG.watch.add(Conductor, "crochet", "crochet");
+			FlxG.watch.add(Conductor, "stepCrochet", "stepCrochet");
+			FlxG.watch.add(this, "curStep", "curStep");
+			FlxG.watch.add(this, "curBeat", "curBeat");
+		#end
+
+		startSong();
 	}
 
 	inline function validateKey(code:Int) {
@@ -92,16 +116,37 @@ class PlayState extends FlxTransitionableState {
 	}
 
 	function startSong() {
+		if(FlxG.sound.music != null)
+			FlxG.sound.music.stop();
 
+		@:privateAccess
+		FlxG.sound.playMusic(inst._sound, 1, false);
+
+		for(track in tracks) {
+			track.play();
+		}
 	}
 
+	var lastMusicTime:Float = 0;
+
 	override public function update(elapsed:Float) {
+		
+		if(FlxG.sound.music.active == true)
+			Conductor.songPosition = FlxG.sound.music.time;
+		
+		if(lastMusicTime < Conductor.songPosition - 50) {
+			FlxG.sound.music.time = lastMusicTime;
+			Conductor.songPosition = FlxG.sound.music.time;
+		}
 
+		checkResync();
 
-		// man fuck MusicBeatState, I am embedding this shit in the update function
+		lastMusicTime = Conductor.songPosition;
+
 		Conductor.sortBPMchanges();
-
-		var oldStep:Int = curStep;
+		
+		// man fuck MusicBeatState, I am embedding this shit in the update function
+		var oldStep:Float = curStep;
 		
 		curStep = Conductor.getCurrentStep();
 		curBeat = Math.floor(curStep / 4);
@@ -115,10 +160,22 @@ class PlayState extends FlxTransitionableState {
 	function stepHit() {
 		if (curStep % 4 == 0)
 			beatHit();
+
 	}
 
 	function beatHit() {
+	}
 
+	var safeOffset:Int = 50;
+
+	function checkResync() {
+
+		for (track in tracks) {
+			if (track.time > FlxG.sound.music.time + safeOffset || track.time < FlxG.sound.music.time - safeOffset) {
+				track.time = FlxG.sound.music.time;
+				trace("crazy ass resync at: " + Conductor.songPosition);
+			}
+		}
 	}
 
 	function scorePopUp() {
