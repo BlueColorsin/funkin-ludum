@@ -20,7 +20,7 @@ class Conductor {
 	public static var stepCrochet:Float = crochet / timeSignature[0]; // steps in milliseconds
 	public static var offset:Float = 0;
 
-	public static var safeFrames:Int = 10;
+	public static var safeFrames:Int = 5;
 	public static var safeZoneOffset:Float = (safeFrames / 60) * 1000; // is calculated in create(), is safeFrames in milliseconds
 
 	public static var BPM_CHANGE:BPMchange = {

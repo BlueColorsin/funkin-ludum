@@ -81,9 +81,10 @@ class ChartParser {
 
 					if (!NoteTypeHandler.noteTypes.exists(color)) continue;
 
-					data.notes.push([ /*type, strumTime, sustainLength*/
-						color,
+					data.notes.push([ /*strumTime, noteData, noteType, sustainLength*/
 						position,
+						x,
+						color,
 						getSustainLength(index, x, y)
 					]);
 				}
