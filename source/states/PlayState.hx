@@ -59,6 +59,8 @@ class PlayState extends FlxTransitionableState {
 	var unspawnNotes:Array<Note> = [];
 	var notes:FlxTypedSpriteGroup<Note>;
 
+	public static var directionMap:Map<Int, String> = [0 => "left", 1 => "down", 2 => "up", 3 => "right"];
+
 	var inputMap:Map<String, Int> = ["note_left" => 0, "note_down" => 1, "note_up" => 2, "note_right" => 3];
 
 	var eventHandler:EventHandler;
@@ -67,48 +69,29 @@ class PlayState extends FlxTransitionableState {
 		add(eventHandler = new EventHandler());
 
 		song = ChartParser.parse(curSong);
-		trace(song);
 		
 		inst = new FlxSound().loadEmbedded(Paths.audio("inst", 'songs/$curSong/audio/'));
 
 		tracks.push(new FlxSound().loadEmbedded(Paths.audio("voices", 'songs/$curSong/audio/')));
 		FlxG.sound.list.add(tracks[0]);
 
+		/*CHARACTERS*/
+
+		bf = new Character("bf", 800, 100);
+		add(bf);
+
+		dad = new Character("dad", 200, 100);
+		add(dad);
+
 		/*NOTES & INPUT SYSTEM*/
 
-		add(notes = new FlxTypedSpriteGroup<Note>());
-
-		var directionMap:Map<Int, String> = [0 => "left", 1 => "down", 2 => "up", 3 => "right"];
-
 		add(playerStrums = new FlxTypedSpriteGroup<StrumNote>(775, 550));
-
-		for (index in 0...4) {
-			var sprite:StrumNote = new StrumNote(Note.swagWidth * index);
-			sprite.setFrames(Paths.getSparrowAtlas("NOTE_ASSETS"));
-			sprite.animation.addByPrefix("static", 'arrow${directionMap[index].toUpperCase()}');
-			sprite.animation.addByPrefix("pressed", '${directionMap[index]} press', 24, false);
-			sprite.animation.addByPrefix("confirm", '${directionMap[index]} confirm', 24, false);
-			sprite.setGraphicSize(Std.int(sprite.width * 0.7));
-			sprite.updateHitbox();
-			sprite.playAnim("static");
-
-			playerStrums.add(sprite);
-		}
+		StrumNote.generateStrums(playerStrums);
 
 		add(opponentStrums = new FlxTypedSpriteGroup<StrumNote>(65, 550));
-
-		for (index in 0...4) {
-			var sprite:StrumNote = new StrumNote(Note.swagWidth * index);
-			sprite.setFrames(Paths.getSparrowAtlas("NOTE_ASSETS"));
-			sprite.animation.addByPrefix("static", 'arrow${directionMap[index].toUpperCase()}');
-			sprite.animation.addByPrefix("pressed", '${directionMap[index]} press', 24, false);
-			sprite.animation.addByPrefix("confirm", '${directionMap[index]} confirm', 24, false);
-			sprite.setGraphicSize(Std.int(sprite.width * 0.7));
-			sprite.updateHitbox();
-			sprite.playAnim("static");
-
-			opponentStrums.add(sprite);
-		}
+		StrumNote.generateStrums(opponentStrums);
+		
+		add(notes = new FlxTypedSpriteGroup<Note>());
 
 		for (noteData in song.notes) {
 			var note:Note = new Note(noteData[0], noteData[1], noteData[3], notes.length != 0 ? notes.members[notes.length - 1] : null);
@@ -139,19 +122,25 @@ class PlayState extends FlxTransitionableState {
 		}
 
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, (event:KeyboardEvent) -> {
+
 			var key:Int = validateKey(event.keyCode);
 
-			if (key == -1 || !songStarted) return;
+			if (key == -1) return;
 
 			var inputNotes:Array<Note> = notes.members.filter((note:Note) -> {
-				var canHit:Bool = note != null && note.alive && !note.hasBeenHit  && !note.tooLate && note.canHit;
-				return canHit && !note.isSustain && note.noteData == key;
+				var canHit:Bool = note != null && note.alive && !note.hasBeenHit && !note.tooLate && note.canHit;
+				return canHit && !note.isSustain && note.noteData == key + 4;
 			});
 
 			if (inputNotes.length != 0) {
 				goodNoteHit(inputNotes[0]);
 			} else {
 				noteMiss(key);
+			}
+
+			var strum:StrumNote = playerStrums.members[key];
+			if(strum.animation.curAnim.name != 'confirm') {
+				strum.playAnim('pressed');
 			}
 		});
 
@@ -160,7 +149,6 @@ class PlayState extends FlxTransitionableState {
 
 			if (key == -1) return;
 
-			trace("KEY UP  : " + key);
 		});
 
 		super.create();
@@ -205,7 +193,7 @@ class PlayState extends FlxTransitionableState {
 
 		if (unspawnNotes[0] != null) {
 			while (unspawnNotes.length > 0 && (unspawnNotes[0].strumTime - Conductor.songPosition) < (spawnTime / songSpeed)) {
-				notes.insert(0, unspawnNotes[0]).spawned = true;
+				notes.insert(0, unspawnNotes[0]);
 				unspawnNotes.splice(unspawnNotes.indexOf(unspawnNotes[0]), 1);
 			}
 		}
@@ -269,6 +257,34 @@ class PlayState extends FlxTransitionableState {
 	}
 
 	function goodNoteHit(note:Note) {
+		if (note.wasGoodHit) return;
 
+		note.wasGoodHit = true;
+
+		var animation:String = 'sing${directionMap[note.noteData - 4].toUpperCase()}';
+
+		var char:Character = note.noteData > 3 ? bf : dad;
+
+		var canPlay:Bool = true;
+		if (note.isSustain) {
+			var holdAnimation:String = animation + "-hold";
+
+			if(char.animation.exists(holdAnimation))
+				animation = holdAnimation;
+
+			if(char.isAnimationLastPlayed(holdAnimation))
+				canPlay = false;
+		}
+
+		if(canPlay)
+			char.playAnim(animation, true);
+
+		var strum:StrumNote = playerStrums.members[note.noteData];
+		if(strum != null)
+			strum.playAnim('confirm', true);
+
+		note.kill();
+		notes.remove(note, true);
+		note.destroy();
 	}
 }

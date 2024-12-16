@@ -54,6 +54,8 @@ class FunkinSprite extends FlxSprite {
 	public function playAnim(animName:String, forced:Bool = false, reversed:Bool = false, frame:Int = 0):Void {
 		if (!animation.exists(animName)) return;
 
+		lastPlayedAnimation = animName;
+
 		var offsets = animOffsets.get(animName);
 		offset.set(offsets[0], offsets[1]);
 
@@ -75,6 +77,11 @@ class FunkinSprite extends FlxSprite {
 			if(idleIndex > idleSteps.length) idleIndex = 0;
 			playAnim(idleSteps[idleIndex]);
 		}
+	}
+
+	var lastPlayedAnimation:String;
+	public function isAnimationLastPlayed(name:String):Bool {
+		return (lastPlayedAnimation == name || lastPlayedAnimation == name + "-hold");
 	}
 
 	/*animation offsets yayyyy*/

@@ -1,8 +1,26 @@
 package objects;
 
+import states.PlayState;
+import backend.Paths;
 import flixel.FlxSprite;
+import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 
 class StrumNote extends FlxSprite {
+	public static function generateStrums(group:FlxTypedSpriteGroup<StrumNote>) {
+		for (index in 0...4) {
+			var sprite:StrumNote = new StrumNote(Note.swagWidth * index);
+			sprite.setFrames(Paths.getSparrowAtlas("NOTE_ASSETS"));
+			sprite.animation.addByPrefix("static", 'arrow${PlayState.directionMap[index].toUpperCase()}');
+			sprite.animation.addByPrefix("pressed", '${PlayState.directionMap[index]} press', 24, false);
+			sprite.animation.addByPrefix("confirm", '${PlayState.directionMap[index]} confirm', 24, false);
+			sprite.setGraphicSize(Std.int(sprite.width * 0.7));
+			sprite.updateHitbox();
+			sprite.playAnim("static");
+
+			group.add(sprite);
+		}
+	}
+
 	public var downscroll:Bool = true;
 
 	var resetAnim:Float = 0;
@@ -11,12 +29,11 @@ class StrumNote extends FlxSprite {
 		super(x, y);		
 		antialiasing = true;
 	}
-	
 
 	override function update(elapsed:Float) {
 		super.update(elapsed);
 
-		if(resetAnim < 0) return;
+		if(resetAnim == 0) return;
 
 		resetAnim -= elapsed;
 		if(resetAnim <= 0) {

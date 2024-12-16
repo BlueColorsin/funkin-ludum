@@ -28,7 +28,7 @@ class Character extends FunkinSprite {
 	}
 
 	public static var characters:Map<String, Dynamic> = [
-		"boyfriend" => {
+		"bf" => {
 			cameraOffsets: [0, 0],
 			texture: "characters/bf",
 			icon: "bf",

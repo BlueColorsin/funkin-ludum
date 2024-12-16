@@ -59,7 +59,7 @@ class Conductor {
 		if(currentBPMchange != bpmChanges[0]) updateBPM();
 	}
 
-	// gets the current step based off of argument one accounting for bpm changes
+	// gets the current step based off of the position in argument one
 	public static function getCurrentStep(?position:Float = null):Int {
 		position ??= songPosition;
 

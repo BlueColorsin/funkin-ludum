@@ -26,9 +26,7 @@ class Note extends FlxSprite {
 
 	public var isSustain:Bool = false;
 
-	public var spawned:Bool = false;
-
-	public var tail:Array<Note>;
+	public var tail:Array<Note> = [];
 	public var parentNote:Note;
 
 	public var noteData:Int = 0;
@@ -107,8 +105,10 @@ class Note extends FlxSprite {
 			x = strum.x;
 		
 		var distance = (0.45 * (Conductor.songPosition - strumTime) * PlayState.songSpeed);
+
 		if (!strum.downscroll)
 			distance *= -1;
+
 		y = strum.y + distance;
 		
 		if(strum.downscroll && isSustain) {

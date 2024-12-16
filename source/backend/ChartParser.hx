@@ -116,7 +116,7 @@ class ChartParser {
 			if(y + 1 > bitmaps[index].height) {
 				index++;
 				y = 0;
-				getScale(index);
+				scale = getScale(index);
 			}
 		}
 		
