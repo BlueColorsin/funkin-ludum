@@ -1,5 +1,6 @@
 package states;
 
+import lime.utils.Preloader;
 import flixel.FlxG;
 import flixel.util.FlxColor;
 import objects.Character;
@@ -8,36 +9,23 @@ import flixel.FlxSprite;
 import backend.Paths;
 import backend.ChartParser;
 import flixel.FlxState;
+import substates.PauseSubstate;
 
-import objects.UiGroup;
+import objects.ClippingGroup;
 
 class NoteTestingState extends FlxState {
 	var sprite:FlxSprite;
-	var ui:UiGroup;
+	var ui:ClippingGroup;
 
 	override function create() {
-		sprite = new FlxSprite().loadGraphic(Paths.image("car"));
-		sprite.scale.set(1, 1);
+		FlxG.camera.bgColor = FlxColor.GRAY;
 
-		ui = new UiGroup(120, 200);
-		ui.add(sprite);
-
-		add(ui);
 	}
 
 	var speed:Float = 10;
 	override function update(elapsed:Float) {
-		if (FlxG.keys.pressed.LEFT)
-			sprite.x -= speed;
-
-		else if (FlxG.keys.pressed.UP)
-			sprite.y -= speed;
-
-		else if (FlxG.keys.pressed.DOWN)
-			sprite.y += speed;
-
-		else if (FlxG.keys.pressed.RIGHT)
-			sprite.x += speed;
+		if(FlxG.keys.justPressed.ENTER)
+			openSubState(new PauseSubstate());
 		
 		super.update(elapsed);
 	}

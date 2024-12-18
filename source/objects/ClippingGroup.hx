@@ -3,32 +3,21 @@ package objects;
 import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 import flixel.FlxG;
 import flixel.util.FlxColor;
-import flixel.FlxObject;
-import flixel.util.typeLimit.OneOfTwo;
-import flixel.group.FlxGroup;
 import flixel.math.FlxRect;
 import flixel.math.FlxPoint;
 import flixel.FlxSprite;
 import flixel.text.FlxText;
 import flixel.FlxBasic;
 
-class UiGroup extends FlxTypedSpriteGroup<FlxSprite> {
-	public var data = {};
-
+class ClippingGroup extends FlxTypedSpriteGroup<FlxSprite> {
 	public var baseSprite:FlxSprite = null;
 
-	override public function new(x, y, ?sprite:FlxSprite) {
-		baseSprite = sprite != null ? sprite : new FlxSprite(x, y).makeGraphic(300, 300, FlxColor.WHITE);
-		FlxG.state.add(baseSprite);
+	override public function new(x, y, sprite) {
+		if (sprite != null)
+			baseSprite = sprite;
 
 		super(x, y);
 	}
-
-	/*clipping system*/
-
-	//if I forget to remove this, this is for the flixel debug console
-	//state.members[1].members[0].scale.set(1.5, 0.5)
-	//state.members[1].members[0].scale.set(0.5, 1.5)
 
 	inline function getRawX(sprite:FlxSprite):Float {
 		return (sprite.x - (this.camera.scroll.x * sprite.scrollFactor.x));
@@ -40,6 +29,9 @@ class UiGroup extends FlxTypedSpriteGroup<FlxSprite> {
 
 	override function update(elapsed:Float) {
 		forEachAlive((sprite:FlxSprite) -> {
+			if(sprite == null)
+				return;
+
 			if(sprite.clipRect == null)
 				sprite.clipRect = FlxRect.get();
 
@@ -49,7 +41,7 @@ class UiGroup extends FlxTypedSpriteGroup<FlxSprite> {
 				baseSprite.width * (1 / sprite.scale.x),
 				baseSprite.height * (1 / sprite.scale.y)
 			);
-		});
+		}, true);
 		
 		super.update(elapsed);
 	}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Created with Funkin Packer v0.1.3 https://neeeoo.github.io/funkin-packer/
+-->
+<TextureAtlas imagePath="pause-pack.png" width="335" height="312">
+	<SubTexture name="resume0001" x="4" y="202" width="203" height="52" frameX="-0" frameY="-0" frameWidth="203" frameHeight="52"/>
+	<SubTexture name="restart0001" x="4" y="258" width="195" height="50" frameX="-0" frameY="-0" frameWidth="195" frameHeight="50"/>
+	<SubTexture name="exit0001" x="211" y="202" width="120" height="54" frameX="-0" frameY="-0" frameWidth="120" frameHeight="54"/>
+	
+	<SubTexture name="paused0001" x="4" y="4" width="278" height="96" frameX="-0" frameY="-0" frameWidth="279" frameHeight="96"/>
+	<SubTexture name="paused0002" x="4" y="104" width="276" height="94" frameX="-3" frameY="-1" frameWidth="279" frameHeight="96"/>
+</TextureAtlas>

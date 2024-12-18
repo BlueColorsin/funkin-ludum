@@ -31,5 +31,5 @@ class Util {
 	*/
 	public static inline function reserialize<T>(data:T):T {
         return haxe.Unserializer.run(haxe.Serializer.run(data));
-	}
+	} 
 }
