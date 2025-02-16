@@ -20,12 +20,14 @@ class NoteTestingState extends FlxState {
 	override function create() {
 		FlxG.camera.bgColor = FlxColor.GRAY;
 
+		
 	}
 
 	var speed:Float = 10;
 	override function update(elapsed:Float) {
-		if(FlxG.keys.justPressed.ENTER)
+		if(FlxG.keys.justPressed.ENTER) {
 			openSubState(new PauseSubstate());
+		}
 		
 		super.update(elapsed);
 	}

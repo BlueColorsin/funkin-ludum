@@ -18,6 +18,8 @@ import flixel.group.FlxSpriteGroup;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.addons.transition.FlxTransitionableState;
 
+import substates.PauseSubstate;
+
 import openfl.events.KeyboardEvent;
 
 import backend.EventHandler;
@@ -172,15 +174,22 @@ class PlayState extends FlxTransitionableState {
 		@:privateAccess
 		FlxG.sound.playMusic(inst._sound, 1, false);
 
-		for(track in tracks) {
+		for(track in tracks)
 			track.play();
-		}
 	}
 
 	var lastMusicTime:Float = 0;
 
 	override public function update(elapsed:Float) {
-		
+		if(FlxG.keys.justPressed.ENTER) {
+			openSubState(new PauseSubstate());
+
+			FlxG.sound.music.pause();
+
+			for (track in tracks)
+				track.pause();
+		}
+
 		if(FlxG.sound.music.active == true)
 			Conductor.songPosition = FlxG.sound.music.time;
 		
@@ -238,6 +247,17 @@ class PlayState extends FlxTransitionableState {
 				track.time = FlxG.sound.music.time;
 			}
 		}
+	}
+	
+	override function closeSubState() {
+		super.closeSubState();
+
+		checkResync();
+
+		FlxG.sound.music.play();
+
+		for (track in tracks)
+			track.play();
 	}
 
 	function scorePopUp() {

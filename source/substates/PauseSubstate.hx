@@ -23,6 +23,7 @@ class PauseSubstate extends FlxSubState {
 
 	var clippingGroup:ClippingGroup;
 	var clippingSprite:FlxSprite;
+	var paused:FlxSprite;
 
 	var cursor:FlxSprite;
 
@@ -30,16 +31,14 @@ class PauseSubstate extends FlxSubState {
 
 	var curSelected:Int = 0;
 
-	var closed:Bool = false;
-
-	override function create() {
-		this.closed = false;
+	override public function new() {
+		super();
 
 		menuItems = [{
 			tag: "resume",
 			sprite: null,
 			callback: () -> {
-				closeSubstate();
+				exit();
 			}
 		},
 		{
@@ -52,13 +51,17 @@ class PauseSubstate extends FlxSubState {
 			sprite: null,
 			callback: () -> {}
 		}];
+	}
+
+	override function create() {
+		super.create();
 
 		clippingSprite = new FlxSprite(465, 150).makeGraphic(350, 420, 0x33000000);
 		add(clippingSprite);
 
 		clippingGroup = new ClippingGroup(465, 150, clippingSprite);
-		
-		var paused:FlxSprite = new FlxSprite(0, 20).setFrames(Paths.getSparrowAtlas("PAUSE_ASSETS"));
+
+		paused = new FlxSprite(0, 20).setFrames(Paths.getSparrowAtlas("PAUSE_ASSETS"));
 
 		paused.animation.addByPrefix("paused", "paused", 8);
 		paused.animation.play("paused");
@@ -71,44 +74,44 @@ class PauseSubstate extends FlxSubState {
 		var lowestX:Float = 0;
 
 		for(index => value in menuItems.keyValueIterator()) {
-			value.sprite = new FlxSprite(0, index * 70 + 170).setFrames(Paths.getSparrowAtlas("PAUSE_ASSETS"));
+			if (value.sprite == null) {
+				value.sprite = new FlxSprite(0, index * 70 + 170).setFrames(Paths.getSparrowAtlas("PAUSE_ASSETS"));
 
-			value.sprite.animation.addByPrefix(value.tag, value.tag);
+				value.sprite.animation.addByPrefix(value.tag, value.tag);
+			}
+
 			value.sprite.animation.play(value.tag);
 			value.sprite.updateHitbox();
 			
 			value.sprite.x = (350 - value.sprite.width) / 2;
 
-			clippingGroup.add(value.sprite);
+			if (!clippingGroup.members.contains(value.sprite))
+				clippingGroup.add(value.sprite);
 		}
 
 		cursor = new FlxSprite(20, 0).loadGraphic(Paths.image("pause_cursor"));
+
 		clippingGroup.add(cursor);
 		
 		add(clippingGroup);
 		
 		changeSelection(0);
 
-		super.create();
-		
 		openCallback = () -> {
-			this.closed = false;
+			if (tween != null)
+				tween.cancel();
 
-			this.clippingSprite.scale.set(0, 0);
-			this.clippingSprite.updateHitbox();
-			this.clippingSprite.screenCenter(XY);
-			this.tween = FlxTween.tween(this.clippingSprite, {"scale.x": 1, "scale.y": 1,}, 0.5, {ease: FlxEase.backOut, onUpdate: (tween:FlxTween) -> {
-				this.clippingSprite.updateHitbox();
-				this.clippingSprite.screenCenter(XY);
+			clippingSprite.scale.set(0, 0);
+			clippingSprite.updateHitbox();
+			clippingSprite.screenCenter(XY);
+			tween = FlxTween.tween(clippingSprite, {"scale.x": 1, "scale.y": 1,}, 0.5, {ease: FlxEase.backOut, onUpdate: (tween:FlxTween) -> {
+				clippingSprite.updateHitbox();
+				clippingSprite.screenCenter(XY);
 			}});
 		}
 	}
 
 	override function update(elapsed:Float) {
-		trace(closed);
-
-		if(closed == true) return;
-
 		if (FlxG.keys.justPressed.DOWN) {
 			changeSelection(1);
 		}
@@ -118,7 +121,6 @@ class PauseSubstate extends FlxSubState {
 		}
 
 		if (FlxG.keys.justPressed.ENTER) {
-			trace("sigma");
 			menuItems[curSelected].callback();
 		}
 
@@ -140,19 +142,24 @@ class PauseSubstate extends FlxSubState {
 		}
 	}
 
-	function closeSubstate() {
+	var closing:Bool = false;
+
+	public function exit() {
+		if(closing)
+			return;
+
 		if (tween != null)
 			tween.cancel();
-		
-		_parentState.persistentUpdate = true;
+
+		closing = true;
 
 		tween = FlxTween.tween(clippingSprite, {"scale.x": 0, "scale.y": 0,}, 0.75, {ease: FlxEase.backIn, onUpdate: (tween:FlxTween) -> {
-			clippingSprite.updateHitbox();
-			clippingSprite.screenCenter(XY);
+			this.clippingSprite.updateHitbox();
+			this.clippingSprite.screenCenter(XY);
 		}, onComplete: (tween:FlxTween) -> {
+			_parentState.closeSubState();
 			_parentState.resetSubState();
-			closed = true;
-			trace(closed);
+			closing = false;
 		}});
 	}
 }
